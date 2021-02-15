@@ -1,16 +1,33 @@
 const mongoose = require("mongoose");
 
 const itemSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  location: {
-    country: String,
-    city: String,
+  title: {
+    type: String,
+    required: true,
   },
-  images: [String],
-
+  description: {
+    type: String,
+    required: true,
+  },
+  location: {
+    country: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+  },
+  images: {
+    type: [String],
+    required: true,
+  },
+  deliveryType: {
+    type: String,
+    required: true,
+  },
   date: Date,
-  deliveryType: String,
 });
 
 itemSchema.set("toJSON", {

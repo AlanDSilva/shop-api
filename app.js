@@ -31,5 +31,6 @@ app.get("/", (req, res) => {
 app.use("/api/items", itemsRouter);
 
 app.use(middleware.unknownEndpoint); // handles unkown endpoints
+app.use(middleware.errorHandler); // handles known errors
 
 module.exports = app;

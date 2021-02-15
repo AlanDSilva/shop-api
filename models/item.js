@@ -28,6 +28,10 @@ const itemSchema = new mongoose.Schema({
     required: true,
   },
   date: Date,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 itemSchema.set("toJSON", {

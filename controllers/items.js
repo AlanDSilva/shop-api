@@ -6,7 +6,7 @@ itemsRouter.get("/", async (req, res) => {
   res.json(items);
 });
 
-itemsRouter.post("/", async (req, res, next) => {
+itemsRouter.post("/", async (req, res) => {
   const body = req.body;
 
   const item = new Item({
@@ -22,6 +22,20 @@ itemsRouter.post("/", async (req, res, next) => {
 
   const savedItem = await item.save();
   res.json(savedItem);
+});
+
+itemsRouter.get("/:id", async (req, res) => {
+  const item = await Item.findById(req.params.id);
+  if (item) {
+    res.json(item);
+  } else {
+    res.status(404).end();
+  }
+});
+
+itemsRouter.delete("/:id", async (req, res) => {
+  await Item.findByIdAndRemove(req.params.id);
+  res.status(204).end();
 });
 
 module.exports = itemsRouter;

@@ -7,10 +7,10 @@ const Item = require("../models/item");
 
 beforeEach(async () => {
   await Item.deleteMany({});
-  let itemObject = new Item(helper.initialItems[0]);
-  await itemObject.save();
-  itemObject = new Item(helper.initialItems[1]);
-  await itemObject.save();
+
+  const itemObjects = helper.initialItems.map((item) => new Item(item));
+  const promiseArray = itemObjects.map((item) => item.save());
+  await Promise.all(promiseArray);
 });
 
 test("items are returned as json", async () => {

@@ -6,7 +6,26 @@ const middleware = require("../utils/middleware");
 const _ = require("lodash");
 
 itemsRouter.get("/", async (req, res) => {
-  const items = await Item.find({}).populate("user", { items: 0 });
+  const category = req.query.category;
+  const country = req.query.country;
+  const city = req.query.city;
+  const maxPrice = req.query.maxPrice;
+  const minPrice = req.query.minPrice;
+
+  const oPrice = req.query.oPrice; // Must be 'asc' or 'desc'
+  const oDate = req.query.oDate; // Must be 'asc' or 'desc'
+
+  let items = await Item.find({}).populate("user", { items: 0 });
+
+  if (category) items = _.filter(items, ["category", category]);
+  if (country) items = _.filter(items, (o) => o.location.country === country);
+  if (city) items = _.filter(items, (o) => o.location.city === city);
+  if (maxPrice) items = _.filter(items, (o) => o.price <= maxPrice);
+  if (minPrice) items = _.filter(items, (o) => o.price >= minPrice);
+
+  if (oPrice) items = _.orderBy(items, ["price"], [oPrice]);
+  if (oDate) items = _.orderBy(items, ["date"], [oDate]);
+
   res.json(items);
 });
 
@@ -27,11 +46,13 @@ itemsRouter.post(
     const item = new Item({
       title: body.title,
       description: body.description,
+      category: body.category,
       location: {
         ...body.location,
       },
       images: _.map(req.files, "path"),
       deliveryType: body.deliveryType,
+      price: body.price,
       date: new Date(),
       user: user._id,
     });

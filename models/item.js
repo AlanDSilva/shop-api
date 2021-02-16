@@ -9,6 +9,10 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    required: true,
+  },
   location: {
     country: {
       type: String,
@@ -21,6 +25,10 @@ const itemSchema = new mongoose.Schema({
   },
   images: {
     type: [String],
+    required: true,
+  },
+  price: {
+    type: Number,
     required: true,
   },
   deliveryType: {

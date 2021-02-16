@@ -1,13 +1,16 @@
 const itemsRouter = require("express").Router();
 const Item = require("../models/item");
+const User = require("../models/user");
 
 itemsRouter.get("/", async (req, res) => {
-  const items = await Item.find({});
+  const items = await Item.find({}).populate("user", { items: 0 });
   res.json(items);
 });
 
 itemsRouter.post("/", async (req, res) => {
   const body = req.body;
+
+  const user = await User.findById(body.userId);
 
   const item = new Item({
     title: body.title,
@@ -18,9 +21,13 @@ itemsRouter.post("/", async (req, res) => {
     images: body.images ? [...body.images] : null,
     deliveryType: body.deliveryType,
     date: new Date(),
+    user: user._id,
   });
-
   const savedItem = await item.save();
+
+  user.items = user.items.concat(savedItem._id);
+  await user.save();
+
   res.json(savedItem);
 });
 

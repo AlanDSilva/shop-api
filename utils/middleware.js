@@ -1,4 +1,17 @@
 const logger = require("./logger");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer");
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "shopAPI",
+    format: async (req, file) => "png",
+  },
+});
+
+const parser = multer({ storage: storage });
 
 const requestLogger = (req, res, next) => {
   logger.info("Method:", req.method);
@@ -21,9 +34,13 @@ const errorHandler = (error, req, res, next) => {
     return res.status(400).json({ error: error.message });
   } else if (error.name === "JsonWebTokenError") {
     return res.status(401).json({ error: "invalid token" });
+  } else if (error.name === "MulterError") {
+    return res
+      .status(400)
+      .send({ error: error.message + ". Trying to upload too many images" });
   }
 
-  logger.error(error.message);
+  logger.error(error.name);
 
   next(error);
 };
@@ -41,4 +58,5 @@ module.exports = {
   unknownEndpoint,
   errorHandler,
   getToken,
+  parser,
 };

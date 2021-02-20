@@ -14,17 +14,11 @@ const itemSchema = new mongoose.Schema({
     required: true,
   },
   location: {
-    country: {
-      type: String,
-      required: true,
-    },
-    city: {
-      type: String,
-      required: true,
-    },
+    type: String,
+    required: true,
   },
-  images: {
-    type: [String],
+  image: {
+    type: String,
     required: true,
   },
   price: {

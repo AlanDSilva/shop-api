@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const usersRouter = require("express").Router();
 const User = require("../models/user");
@@ -21,7 +22,18 @@ usersRouter.post("/", async (request, response) => {
 
   const savedUser = await user.save();
 
-  response.json(savedUser);
+  const userForToken = {
+    username: savedUser.username,
+    id: savedUser.id,
+  };
+
+  const token = jwt.sign(userForToken, process.env.SECRET);
+
+  response.status(200).send({
+    token,
+    username: user.username,
+    name: user.name,
+  });
 });
 
 module.exports = usersRouter;

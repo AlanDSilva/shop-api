@@ -29,41 +29,79 @@ itemsRouter.get("/", async (req, res) => {
   res.json(items);
 });
 
-itemsRouter.post(
-  "/",
-  middleware.parser.array("image", 4),
-  middleware.getToken,
-  async (req, res) => {
-    const body = req.body;
+// itemsRouter.post(
+//   "/",
+//   middleware.parser.array("image", 4),
+//   middleware.getToken,
+//   async (req, res) => {
+//     const body = req.body;
 
-    const decodedToken = jwt.verify(req.token, process.env.SECRET);
-    if (!req.token || !decodedToken.id) {
-      return res.status(401).json({ error: "token missing or invalid" });
-    }
+//     const decodedToken = jwt.verify(req.token, process.env.SECRET);
+//     if (!req.token || !decodedToken.id) {
+//       return res.status(401).json({ error: "token missing or invalid" });
+//     }
 
-    const user = await User.findById(decodedToken.id);
+//     const user = await User.findById(decodedToken.id);
 
-    const item = new Item({
-      title: body.title,
-      description: body.description,
-      category: body.category,
-      location: {
-        ...body.location,
-      },
-      images: _.map(req.files, "path"),
-      deliveryType: body.deliveryType,
-      price: body.price,
-      date: new Date(),
-      user: user._id,
-    });
-    const savedItem = await item.save();
+//     const item = new Item({
+//       title: body.title,
+//       description: body.description,
+//       category: body.category,
+//       location: {
+//         ...body.location,
+//       },
+//       images: _.map(req.files, "path"),
+//       deliveryType: body.deliveryType,
+//       price: body.price,
+//       date: new Date(),
+//       user: user._id,
+//     });
+//     const savedItem = await item.save();
 
-    user.items = user.items.concat(savedItem._id);
-    await user.save();
+//     user.items = user.items.concat(savedItem._id);
+//     await user.save();
 
-    res.json(savedItem);
+//     res.json(savedItem);
+//   }
+// );
+
+itemsRouter.post("/", middleware.getToken, async (req, res) => {
+  const body = req.body;
+
+  const decodedToken = jwt.verify(req.token, process.env.SECRET);
+  if (!req.token || !decodedToken.id) {
+    return res.status(401).json({ error: "token missing or invalid" });
   }
-);
+
+  const user = await User.findById(decodedToken.id);
+
+  const item = new Item({
+    title: body.title,
+    description: body.description,
+    category: body.category,
+    location: body.location,
+    image: body.image,
+    deliveryType: body.deliveryType,
+    price: body.price,
+    date: new Date(),
+    user: user._id,
+  });
+  const savedItem = await item.save();
+
+  user.items = user.items.concat(savedItem._id);
+  await user.save();
+
+  const formattedResponse = {
+    ...item,
+    user: {
+      id: user._id,
+      username: user.username,
+      name: user.name,
+    },
+  };
+
+  res.json(formattedResponse);
+});
 
 itemsRouter.get("/:id", async (req, res) => {
   const item = await Item.findById(req.params.id);

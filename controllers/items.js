@@ -91,16 +91,7 @@ itemsRouter.post("/", middleware.getToken, async (req, res) => {
   user.items = user.items.concat(savedItem._id);
   await user.save();
 
-  const formattedResponse = {
-    ...item,
-    user: {
-      id: user._id,
-      username: user.username,
-      name: user.name,
-    },
-  };
-
-  res.json(formattedResponse);
+  res.json({ item });
 });
 
 itemsRouter.get("/:id", async (req, res) => {

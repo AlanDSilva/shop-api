@@ -47,9 +47,7 @@ itemsRouter.post(
       title: body.title,
       description: body.description,
       category: body.category,
-      location: {
-        ...body.location,
-      },
+      location: body.location,
       images: _.map(req.files, "path"),
       deliveryType: body.deliveryType,
       price: body.price,
@@ -61,6 +59,7 @@ itemsRouter.post(
     user.items = user.items.concat(savedItem._id);
     await user.save();
 
+    console.log(savedItem);
     res.json(savedItem);
   }
 );

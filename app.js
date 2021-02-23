@@ -28,6 +28,8 @@ app.use(cors());
 app.use(express.json());
 app.use(middleware.requestLogger);
 
+app.use(express.static("docs"));
+
 app.get("/", (req, res) => {
   res.send("Hello world!");
 });

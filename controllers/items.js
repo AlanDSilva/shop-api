@@ -64,6 +64,44 @@ itemsRouter.post(
   }
 );
 
+itemsRouter.put(
+  "/:id",
+  middleware.parser.array("image", 4),
+  middleware.getToken,
+  async (req, res) => {
+    const body = req.body;
+
+    const decodedToken = jwt.verify(req.token, process.env.SECRET);
+    if (!req.token || !decodedToken.id) {
+      return res.status(401).json({ error: "token missing or invalid" });
+    }
+
+    const foundItem = await Item.findById(req.params.id);
+
+    const user = await User.findById(decodedToken.id);
+
+    const item = {
+      title: body.title,
+      description: body.description,
+      category: body.category,
+      location: body.location,
+      images: _.map(req.files, "path"),
+      deliveryType: body.deliveryType,
+      price: body.price,
+      date: new Date(),
+    };
+
+    if (foundItem.user.toString() === decodedToken.id) {
+      const updatedItem = await Item.findByIdAndUpdate(req.params.id, item, {
+        new: true,
+      });
+      res.json(updatedItem);
+    } else {
+      res.status(401).json({ error: "user not allowed to edit this item" });
+    }
+  }
+);
+
 itemsRouter.get("/:id", async (req, res) => {
   const item = await Item.findById(req.params.id);
   if (item) {

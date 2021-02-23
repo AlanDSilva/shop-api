@@ -4,9 +4,11 @@ const helper = require("./test_helper");
 const app = require("../app");
 const api = supertest(app);
 const Item = require("../models/item");
+const User = require("../models/user");
 
 beforeEach(async () => {
   await Item.deleteMany({});
+  await User.deleteMany({});
 
   const itemObjects = helper.initialItems.map((item) => new Item(item));
   const promiseArray = itemObjects.map((item) => item.save());
@@ -36,69 +38,84 @@ describe("when there is initially some items saved", () => {
 });
 
 describe("addition of a new item", () => {
-  test("a valid item can be added", async () => {
-    const newItem = {
-      title: "Snow Boots",
-      description: "A pair of old snow boots",
-      location: {
-        country: "Finland",
-        city: "Kokkola",
-      },
-      images: ["firstImageUrl", "SecondImageUrl"],
-      deliveryType: "Pickup",
-    };
+  const newItem = {
+    title: "Snow Boots",
+    description: "A pair of old snow boots",
+    category: "Shoes",
+    location: "Kokkola",
+    images: ["firstImageUrl", "SecondImageUrl"],
+    deliveryType: "Pickup",
+    price: 139.99,
+  };
+  describe("if user not logged in...", () => {
+    test("a valid item cannot be added", async () => {
+      await api
+        .post("/api/items")
+        .send(newItem)
+        .expect(401)
+        .expect("Content-Type", /application\/json/);
 
-    await api
-      .post("/api/items")
-      .send(newItem)
-      .expect(200)
-      .expect("Content-Type", /application\/json/);
+      const response = await api.get("/api/items");
 
-    const response = await api.get("/api/items");
-
-    const titles = response.body.map((r) => r.title);
-
-    expect(response.body).toHaveLength(helper.initialItems.length + 1);
-    expect(titles).toContain("Snow Boots");
+      expect(response.body).toHaveLength(helper.initialItems.length);
+    });
   });
-
-  test("item without title is not added", async () => {
-    const newItem = {
-      description: "Old cardigan found behind my piano",
-      location: {
-        country: "Finland",
-        city: "Helsinki",
-      },
-      images: [],
-      deliveryType: "Shipping",
+  describe("if user logged in...", () => {
+    const newUser = {
+      username: "UserWithItems",
+      name: "UserWithItems",
+      password: "UserWithItems",
     };
 
-    await api.post("/api/items").send(newItem).expect(400);
+    test("a valid item can be added", async () => {
+      const createdUser = await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
 
-    const response = await api.get("/api/items");
+      await api
+        .post("/api/items")
+        .send(newItem)
+        .set({ Authorization: `Bearer ${createdUser.body.token}` })
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
 
-    expect(response.body).toHaveLength(helper.initialItems.length);
+      const response = await api.get("/api/items");
+
+      expect(response.body).toHaveLength(helper.initialItems.length + 1);
+    });
+
+    test("item without title is not added", async () => {
+      const createdUser = await api
+        .post("/api/users")
+        .send(newUser)
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
+
+      const newItem = {
+        description: "Old cardigan found behind my piano",
+        category: "Clothes",
+        location: "Tornio",
+        images: [],
+        deliveryType: "Shipping",
+        price: 59.99,
+      };
+
+      await api
+        .post("/api/items")
+        .send(newItem)
+        .set({ Authorization: `Bearer ${createdUser.body.token}` })
+        .expect(400);
+
+      const response = await api.get("/api/items");
+
+      expect(response.body).toHaveLength(helper.initialItems.length);
+    });
   });
 });
 
-describe("Deletion of an item", () => {
-  test("an item with valid id can be deleted", async () => {
-    const itemsAtStart = await helper.itemsInDb();
-    const itemToDelete = itemsAtStart[0];
-
-    await api.delete(`/api/items/${itemToDelete.id}`).expect(204);
-
-    const itemsAtEnd = await helper.itemsInDb();
-
-    expect(itemsAtEnd).toHaveLength(helper.initialItems.length - 1);
-
-    const titles = itemsAtEnd.map((r) => r.title);
-
-    expect(titles).not.toContain(itemToDelete.title);
-  });
-});
-
-describe("viewing a specific new item", () => {
+describe("viewing a specific item", () => {
   test("an item with valid id can be viewed", async () => {
     const itemsAtStart = await helper.itemsInDb();
 

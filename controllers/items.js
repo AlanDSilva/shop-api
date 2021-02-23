@@ -58,8 +58,6 @@ itemsRouter.post(
 
     user.items = user.items.concat(savedItem._id);
     await user.save();
-
-    console.log(savedItem);
     res.json(savedItem);
   }
 );

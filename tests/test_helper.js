@@ -5,24 +5,20 @@ const initialItems = [
   {
     title: "Socks",
     description: "A pair of new socks",
-    location: {
-      country: "Finland",
-      city: "Helsinki",
-    },
+    category: "Clothes",
+    location: "Helsinki",
     images: ["firstImageUrl", "SecondImageUrl"],
-
     date: new Date(),
+    price: 99.99,
     deliveryType: "Pickup",
   },
   {
     title: "Gloves",
     description: "A pair of new gloves",
-    location: {
-      country: "Finland",
-      city: "Oulu",
-    },
+    category: "Clothes",
+    location: "Oulu",
     images: ["firstImageUrl", "SecondImageUrl"],
-
+    price: 66.99,
     date: new Date(),
     deliveryType: "Shipping",
   },
@@ -32,12 +28,11 @@ const nonExistingId = async () => {
   const item = new Item({
     title: "Will be deleted",
     description: "Deleted to get valid but non existing id",
-    location: {
-      country: "Fake Country",
-      city: "Fake city",
-    },
+    categort: "Non",
+    location: "Jyvaskyla",
     images: ["Not a real image1", "Not a real image2"],
     date: new Date(),
+    price: 33.99,
     deliveryType: "Air ship",
   });
   await item.save();

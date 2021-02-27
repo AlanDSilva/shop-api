@@ -7,8 +7,7 @@ const _ = require("lodash");
 
 itemsRouter.get("/", async (req, res) => {
   const category = req.query.category;
-  const country = req.query.country;
-  const city = req.query.city;
+  const location = req.query.location;
   const maxPrice = req.query.maxPrice;
   const minPrice = req.query.minPrice;
 
@@ -18,8 +17,7 @@ itemsRouter.get("/", async (req, res) => {
   let items = await Item.find({}).populate("user", { items: 0 });
 
   if (category) items = _.filter(items, ["category", category]);
-  if (country) items = _.filter(items, (o) => o.location.country === country);
-  if (city) items = _.filter(items, (o) => o.location.city === city);
+  if (location) items = _.filter(items, (o) => o.location.includes(location));
   if (maxPrice) items = _.filter(items, (o) => o.price <= maxPrice);
   if (minPrice) items = _.filter(items, (o) => o.price >= minPrice);
 
